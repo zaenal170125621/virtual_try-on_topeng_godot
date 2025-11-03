@@ -1,217 +1,166 @@
 using Godot;
 using System;
-using System.Diagnostics;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text;
-using System.Linq; // Added for FirstOrDefault, Skip, and Take
+using System.Text.Json;
 
 public partial class TryOn : Control
 {
 	private TextureRect _videoFeed;
+	private OptionButton _maskDropdown;
 	private bool _isStreaming = true;
-	private Godot.HttpRequest _httpRequest = new HttpRequest();
+	private Godot.HttpRequest _httpRequest;
 	private readonly System.Net.Http.HttpClient _httpClient = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(10) };
 	private bool _isDisposing = false;
+	private double _frameTimer = 0;
+	private const double FrameInterval = 0.033; // ~30 FPS
 
 	public override void _Ready()
 	{
 		_videoFeed = GetNode<TextureRect>("VideoFeed");
+		_maskDropdown = GetNode<OptionButton>("MaskDropdown");
+		
+		// Create HttpRequest for frame fetching
+		_httpRequest = new Godot.HttpRequest();
 		AddChild(_httpRequest);
+		_httpRequest.RequestCompleted += OnFrameReceived;
+		
 		if (_videoFeed == null)
 		{
 			GD.PrintErr("Node VideoFeed tidak ditemukan!");
 			return;
 		}
-		StartVideoFeed();
+		
+		if (_maskDropdown == null)
+		{
+			GD.PrintErr("Node MaskDropdown tidak ditemukan!");
+			return;
+		}
+		
+		// Load available masks dari backend
+		LoadAvailableMasks();
 	}
 
-	private async Task StartVideoFeed()
+	public override void _Process(double delta)
 	{
-		GD.Print("Mengambil stream video dari http://127.0.0.1:5000/video_feed ...");
-		while (_isStreaming && !_isDisposing)
+		if (!_isStreaming || _isDisposing)
+			return;
+			
+		_frameTimer += delta;
+		if (_frameTimer >= FrameInterval)
 		{
-			try
+			_frameTimer = 0;
+			RequestFrame();
+		}
+	}
+
+	private void RequestFrame()
+	{
+		// Check if already requesting to avoid multiple concurrent requests
+		if (_httpRequest.GetHttpClientStatus() != Godot.HttpClient.Status.Disconnected)
+			return; // Skip if still processing previous request
+			
+		Error err = _httpRequest.Request("http://127.0.0.1:5000/get_frame");
+		if (err != Error.Ok)
+		{
+			// Silently skip, will retry on next frame
+		}
+	}
+
+	private void OnFrameReceived(long result, long responseCode, string[] headers, byte[] body)
+	{
+		if (responseCode != 200 || body.Length == 0)
+			return;
+			
+		try
+		{
+			// Validate JPEG header
+			if (body.Length < 2 || body[0] != 0xFF || body[1] != 0xD8)
+				return;
+				
+			// Validate JPEG footer
+			if (body[body.Length - 2] != 0xFF || body[body.Length - 1] != 0xD9)
+				return;
+			
+			Image img = new Image();
+			Error error = img.LoadJpgFromBuffer(body);
+			
+			if (error == Error.Ok && _videoFeed != null && !_isDisposing)
 			{
-				GD.Print("Mengirim HTTP request...");
-				using var request = new HttpRequestMessage(HttpMethod.Get, "http://127.0.0.1:5000/video_feed");
-				HttpResponseMessage response = null;
-				try
-				{
-					response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
-					GD.Print("Response diterima, status: " + response.StatusCode);
-					response.EnsureSuccessStatusCode();
-				}
-				catch (HttpRequestException httpEx)
-				{
-					//GD.PrintErr($"HTTP request gagal: {httpEx.Message}, StatusCode: {httpEx.StatusCode}");
-					await Task.Delay(1000); // Tunggu sebelum retry
-					continue;
-				}
-				catch (TaskCanceledException)
-				{
-					//GD.PrintErr("HTTP request timeout");
-					await Task.Delay(1000);
-					continue;
-				}
-				catch (Exception ex)
-				{
-					//GD.PrintErr($"Unexpected error saat HTTP request: {ex.Message}, StackTrace: {ex.StackTrace}");
-					await Task.Delay(1000);
-					continue;
-				}
-
-				// Verifikasi content type
-				var contentType = response.Content.Headers.ContentType?.ToString();
-				GD.Print("Content-Type: " + contentType);
-				if (!contentType.Contains("multipart/x-mixed-replace"))
-				{
-					//GD.PrintErr($"Unexpected content type: {contentType}");
-					response.Dispose();
-					await Task.Delay(1000);
-					continue;
-				}
-
-				// Dapatkan boundary
-				string boundary = response.Content.Headers.ContentType.Parameters
-					.FirstOrDefault(p => p.Name == "boundary")?.Value ?? "frame";
-				boundary = "--" + boundary;
-				GD.Print("Boundary detected: " + boundary);
-
-				using var stream = await response.Content.ReadAsStreamAsync();
-				using var memoryStream = new System.IO.MemoryStream();
-				var buffer = new byte[8192];
-				int consecutiveEmptyReads = 0;
-				const int maxBufferSize = 1024 * 1024; // Batasi buffer hingga 1 MB
-
-				while (_isStreaming && !_isDisposing)
-				{
-					int bytesRead = await stream.ReadAsync(buffer, 0, buffer.Length);
-					if (bytesRead == 0)
-					{
-						consecutiveEmptyReads++;
-						if (consecutiveEmptyReads > 5)
-						{
-							GD.PrintErr("Stream ended unexpectedly after multiple empty reads");
-							break;
-						}
-						await Task.Delay(10);
-						continue;
-					}
-					consecutiveEmptyReads = 0;
-
-					if (memoryStream.Length + bytesRead > maxBufferSize)
-					{
-						GD.PrintErr("Memory stream exceeded max size, clearing buffer");
-						memoryStream.SetLength(0);
-					}
-
-					await memoryStream.WriteAsync(buffer, 0, bytesRead);
-
-					byte[] frameData = memoryStream.ToArray();
-					string frameString = System.Text.Encoding.ASCII.GetString(frameData);
-					int boundaryIndex = frameString.IndexOf(boundary, StringComparison.Ordinal);
-					if (boundaryIndex == -1)
-						continue;
-
-					int headerEnd = frameString.IndexOf("\r\n\r\n", boundaryIndex) + 4;
-					if (headerEnd < 4)
-						continue;
-
-					int nextBoundaryIndex = frameString.IndexOf(boundary, boundaryIndex + boundary.Length, StringComparison.Ordinal);
-					int jpgEnd = nextBoundaryIndex > 0 ? nextBoundaryIndex : frameData.Length;
-
-					byte[] jpgData = frameData.Skip(headerEnd).Take(jpgEnd - headerEnd).ToArray();
-					if (jpgData.Length > 0)
-					{
-						// Debug: Simpan frame
-						// System.IO.File.WriteAllBytes($"debug_frame_{DateTime.Now.Ticks}.jpg", jpgData);
-
-						if (jpgData.Length >= 2 && jpgData[0] == 0xFF && jpgData[1] == 0xD8)
-						{
-							Image img = new Image();
-							Error error = img.LoadJpgFromBuffer(jpgData);
-							if (error != Error.Ok)
-							{
-								//GD.PrintErr($"Gagal memuat JPG: {error}, Data length: {jpgData.Length}");
-								//GD.Print("First 10 bytes: " + BitConverter.ToString(jpgData.Take(10).ToArray()));
-								continue;
-							}
-
-							Callable.From(() =>
-							{
-								if (_videoFeed != null && !_isDisposing)
-								{
-									ImageTexture tex = ImageTexture.CreateFromImage(img);
-									_videoFeed.Texture = tex;
-								}
-							}).CallDeferred();
-						}
-						else
-						{
-							//GD.PrintErr($"Invalid JPEG header, Data length: {jpgData.Length}");
-							//GD.Print("First 10 bytes: " + BitConverter.ToString(jpgData.Take(10).ToArray()));
-						}
-					}
-
-					if (nextBoundaryIndex > 0)
-					{
-						byte[] remainingData = frameData.Skip(nextBoundaryIndex).ToArray();
-						memoryStream.SetLength(0);
-						memoryStream.Write(remainingData, 0, remainingData.Length);
-					}
-					else
-					{
-						memoryStream.SetLength(0);
-					}
-
-					await Task.Delay(1); // Cegah CPU overload
-				}
-
-				response.Dispose();
+				ImageTexture tex = ImageTexture.CreateFromImage(img);
+				_videoFeed.Texture = tex;
 			}
-			catch (Exception e)
+		}
+		catch
+		{
+			// Silently skip invalid frames
+		}
+	}
+
+	private async void LoadAvailableMasks()
+	{
+		try
+		{
+			var response = await _httpClient.GetStringAsync("http://127.0.0.1:5000/available_masks");
+			var jsonDoc = JsonDocument.Parse(response);
+			var masks = jsonDoc.RootElement.GetProperty("masks");
+			
+			_maskDropdown.Clear();
+			int index = 0;
+			foreach (var mask in masks.EnumerateArray())
 			{
-				//GD.PrintErr($"Gagal ambil frame: {e.Message}, StackTrace: {e.StackTrace}");
-				if (!_isStreaming)
-					break;
+				string maskName = mask.GetString();
+				_maskDropdown.AddItem(maskName, index++);
 			}
+			
+			GD.Print($"Loaded {index} masks");
+		}
+		catch (Exception e)
+		{
+			GD.PrintErr($"Gagal load masks: {e.Message}");
+			// Fallback: tambah mask default
+			_maskDropdown.AddItem("pig_nose", 0);
+		}
+	}
 
-			await Task.Delay(33); // Target 30 fps
+	private async void OnMaskSelected(int index)
+	{
+		string selectedMask = _maskDropdown.GetItemText(index);
+		GD.Print($"Mask dipilih: {selectedMask}");
+		
+		try
+		{
+			var payload = new { mask_name = selectedMask };
+			var json = JsonSerializer.Serialize(payload);
+			var content = new StringContent(json, Encoding.UTF8, "application/json");
+			
+			var response = await _httpClient.PostAsync("http://127.0.0.1:5000/select_mask", content);
+			var result = await response.Content.ReadAsStringAsync();
+			GD.Print($"Response: {result}");
+		}
+		catch (Exception e)
+		{
+			GD.PrintErr($"Gagal select mask: {e.Message}");
 		}
 	}
 
 	private void OnStopPressed()
 	{
 		_isDisposing = true;
+		_isStreaming = false;
 		GetTree().ChangeSceneToFile("res://scene/main_menu.tscn");
 	}
 	
 	private void _on_BtnTipe1_pressed()
 	{
-		SendPostRequestTipe(1);
+		// Untuk kompatibilitas dengan button lama, bisa dihapus jika tidak digunakan
+		GD.Print("Filter 1 pressed - gunakan dropdown sebagai gantinya");
 	}
 	
 	private void _on_BtnTipe2_pressed()
 	{
-		SendPostRequestTipe(2);
-	}
-	
-	private void SendPostRequestTipe(int tipe){
-		// URL of the FastAPI endpoint
-		string url = "http://127.0.0.1:5000/update_filter";
-
-		// JSON payload
-		string jsonPayload = $"{{\"tipe\": {tipe}}}";
-
-		// Headers for the POST request
-		string[] headers = new string[] { "Content-Type: application/json" };
-
-		// Send the POST request
-		Error error = _httpRequest.Request(url, headers, Godot.HttpClient.Method.Post, jsonPayload);
-		if (error != Error.Ok)
-		{
-			GD.Print("Error initiating HTTP request: ", error);
-		}
+		// Untuk kompatibilitas dengan button lama, bisa dihapus jika tidak digunakan
+		GD.Print("Filter 2 pressed - gunakan dropdown sebagai gantinya");
 	}
 }

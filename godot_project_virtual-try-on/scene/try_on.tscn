@@ -106,6 +106,27 @@ theme_override_styles/normal = SubResource("StyleBoxTexture_6aoja")
 text = "Back
 "
 
+[node name="MaskDropdown" type="OptionButton" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = 260.0
+offset_right = 100.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_hover_pressed_color = Color(0.262745, 0.678431, 0.509804, 1)
+theme_override_colors/font_hover_color = Color(0.208262, 0.560284, 0.419026, 1)
+theme_override_colors/font_pressed_color = Color(0.100731, 0.306788, 0.222535, 1)
+theme_override_colors/font_focus_color = Color(0.262745, 0.678431, 0.509804, 1)
+theme_override_colors/font_color = Color(0.334006, 0.815893, 0.618541, 1)
+theme_override_fonts/font = ExtResource("2_cjvfv")
+theme_override_font_sizes/font_size = 20
+
 [node name="BtnTipe1" type="Button" parent="."]
 layout_mode = 1
 anchors_preset = 8
@@ -162,5 +183,6 @@ text = "Filter 2
 "
 
 [connection signal="pressed" from="BtnBack" to="." method="OnStopPressed"]
+[connection signal="item_selected" from="MaskDropdown" to="." method="OnMaskSelected"]
 [connection signal="pressed" from="BtnTipe1" to="." method="_on_BtnTipe1_pressed"]
 [connection signal="pressed" from="BtnTipe2" to="." method="_on_BtnTipe2_pressed"]
