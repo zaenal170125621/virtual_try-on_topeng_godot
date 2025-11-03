@@ -31,10 +31,18 @@ virtual_try-on_topeng_godot/
 ├── models/                         # Model ML terlatih
 │   └── face_pose_regressor.joblib
 ├── dataset/                        # Dataset (tidak di-push ke Git)
-│   ├── labels/
-│   ├── labels2/
 │   ├── train/
+│   │   ├── images/                 # Gambar training
+│   │   │   ├── img_00001.jpg
+│   │   │   ├── img_00002.jpg
+│   │   │   └── ...
+│   │   └── labels.json            # Label untuk data training
 │   └── val/
+│       ├── images/                 # Gambar validation
+│       │   ├── img_10001.jpg
+│       │   ├── img_10002.jpg
+│       │   └── ...
+│       └── labels.json            # Label untuk data validation
 ├── __pycache__/                    # Cache Python
 ├── CARA_TAMBAH_TOPENG.md           # Panduan menambah topeng
 ├── INTEGRATION_GUIDE.md            # Panduan integrasi
@@ -108,6 +116,35 @@ python train_dataset.py
 
 Model akan disimpan di `models/face_pose_regressor.joblib`.
 
+## Dataset
+
+Dataset yang digunakan untuk training model adalah [Face Detection Dataset](https://www.kaggle.com/datasets/fareselmenshawii/face-detection-dataset?resource=download-directory) dari Kaggle. Dataset ini berisi gambar wajah dengan anotasi untuk deteksi dan pose estimation.
+
+**Struktur Dataset:**
+
+```
+dataset/
+├─ train/
+│   ├─ images/
+│   │   ├─ img_00001.jpg
+│   │   ├─ img_00002.jpg
+│   │   └─ ...
+│   └─ labels.json   ← label untuk data train
+│
+└─ val/
+    ├─ images/
+    │   ├─ img_10001.jpg
+    │   ├─ img_10002.jpg
+    │   └─ ...
+    └─ labels.json   ← label untuk data validation
+```
+
+Untuk mendownload dan menyiapkan dataset:
+
+1. Kunjungi link dataset di Kaggle.
+2. Download dan ekstrak file zip ke folder `dataset/`.
+3. Pastikan struktur folder sesuai dengan yang diharapkan oleh `train_dataset.py`.
+
 ## Menambah Topeng Baru
 
 Lihat panduan di [`CARA_TAMBAH_TOPENG.md`](CARA_TAMBAH_TOPENG.md) untuk instruksi lengkap menambah topeng baru.
@@ -142,4 +179,4 @@ Jika ada pertanyaan atau masalah, buat issue di repository ini atau hubungi main
 
 ---
 
-**Catatan**: Folder `dataset/` tidak di-push ke repository untuk menghemat space. Pastikan Anda memiliki dataset lokal untuk training model.
+**Catatan**: Folder `dataset/` tidak di-push ke repository untuk menghemat space. Dataset yang digunakan adalah [Face Detection Dataset](https://www.kaggle.com/datasets/fareselmenshawii/face-detection-dataset?resource=download-directory) dari Kaggle. Pastikan Anda mendownload dan mengekstrak dataset tersebut ke folder `dataset/` untuk training model.
