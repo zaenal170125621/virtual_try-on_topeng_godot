@@ -25,7 +25,12 @@ Contoh struktur:
 godot_project_virtual-try-on/
 └── assets/
     └── filter_image/
-        ├── pig_nose.png           (sudah ada)
+        ├── topeng_1.png           (sudah ada)
+        ├── topeng_2.png           (sudah ada)
+        ├── badut.png              (sudah ada)
+        ├── spiderman.png          (sudah ada)
+        ├── ultraman.png           (sudah ada)
+        ├── kamen_rider.png        (sudah ada)
         ├── mask_batman.png        (baru)
         ├── mask_spiderman.png     (baru)
         └── topeng_malang_red.png  (baru)
@@ -37,15 +42,26 @@ Buka file `app.py` di root project, cari baris ini (sekitar line 26-30):
 
 ```python
 available_masks = {
-    "pig_nose": "godot_project_virtual-try-on/assets/filter_image/pig_nose.png",
-    # Tambahkan mask lain di sini
+    "no_filter": None,  # Tidak ada topeng
+    "topeng_1": "godot_project_virtual-try-on/assets/filter_image/topeng_1.png",
+    "topeng_2": "godot_project_virtual-try-on/assets/filter_image/topeng_2.png",
+    "badut": "godot_project_virtual-try-on/assets/filter_image/badut.png",
+    "spiderman": "godot_project_virtual-try-on/assets/filter_image/spiderman.png",
+    "ultraman": "godot_project_virtual-try-on/assets/filter_image/ultraman.png",
+    "kamen_rider": "godot_project_virtual-try-on/assets/filter_image/kamen_rider.png",
 }
 ```
 
 Tambahkan mask baru dengan format:
 ```python
 available_masks = {
-    "pig_nose": "godot_project_virtual-try-on/assets/filter_image/pig_nose.png",
+    "no_filter": None,  # Tidak ada topeng
+    "topeng_1": "godot_project_virtual-try-on/assets/filter_image/topeng_1.png",
+    "topeng_2": "godot_project_virtual-try-on/assets/filter_image/topeng_2.png",
+    "badut": "godot_project_virtual-try-on/assets/filter_image/badut.png",
+    "spiderman": "godot_project_virtual-try-on/assets/filter_image/spiderman.png",
+    "ultraman": "godot_project_virtual-try-on/assets/filter_image/ultraman.png",
+    "kamen_rider": "godot_project_virtual-try-on/assets/filter_image/kamen_rider.png",
     "batman": "godot_project_virtual-try-on/assets/filter_image/mask_batman.png",
     "spiderman": "godot_project_virtual-try-on/assets/filter_image/mask_spiderman.png",
     "topeng_malang_red": "godot_project_virtual-try-on/assets/filter_image/topeng_malang_red.png",
@@ -173,7 +189,13 @@ godot_project_virtual-try-on/assets/filter_image/
 **3. Edit app.py:**
 ```python
 available_masks = {
-    "pig_nose": "godot_project_virtual-try-on/assets/filter_image/pig_nose.png",
+    "no_filter": None,  # Tidak ada topeng
+    "topeng_1": "godot_project_virtual-try-on/assets/filter_image/topeng_1.png",
+    "topeng_2": "godot_project_virtual-try-on/assets/filter_image/topeng_2.png",
+    "badut": "godot_project_virtual-try-on/assets/filter_image/badut.png",
+    "spiderman": "godot_project_virtual-try-on/assets/filter_image/spiderman.png",
+    "ultraman": "godot_project_virtual-try-on/assets/filter_image/ultraman.png",
+    "kamen_rider": "godot_project_virtual-try-on/assets/filter_image/kamen_rider.png",
     "Topeng Malang Merah": "godot_project_virtual-try-on/assets/filter_image/topeng_malang_merah.png",
     "Topeng Malang Putih": "godot_project_virtual-try-on/assets/filter_image/topeng_malang_putih.png",
     "Topeng Malang Hitam": "godot_project_virtual-try-on/assets/filter_image/topeng_malang_hitam.png",
@@ -190,17 +212,18 @@ Jika ingin setting berbeda untuk setiap mask (scale, position, dll), bisa expand
 
 ```python
 available_masks = {
-    "pig_nose": {
-        "path": "godot_project_virtual-try-on/assets/filter_image/pig_nose.png",
+    "no_filter": None,  # Tidak ada topeng
+    "topeng_1": {
+        "path": "godot_project_virtual-try-on/assets/filter_image/topeng_1.png",
         "scale": 1.0,
         "offset_x": 0,
         "offset_y": 10
     },
-    "topeng_besar": {
-        "path": "godot_project_virtual-try-on/assets/filter_image/topeng_besar.png",
-        "scale": 1.5,  # Lebih besar
+    "badut": {
+        "path": "godot_project_virtual-try-on/assets/filter_image/badut.png",
+        "scale": 1.2,  # Lebih besar
         "offset_x": 0,
-        "offset_y": -20  # Lebih ke atas
+        "offset_y": -5  # Sedikit ke atas
     }
 }
 ```

@@ -27,10 +27,14 @@ model = joblib.load("models/face_pose_regressor.joblib")
 scaler = model.get("scaler")
 
 # Global state untuk mask yang dipilih
-current_mask_path = "godot_project_virtual-try-on/assets/filter_image/pig_nose.png"
+current_mask_path = None  # None berarti no filter
 available_masks = {
-    "pig_nose": "godot_project_virtual-try-on/assets/filter_image/pig_nose.png",
-    # Tambahkan mask lain di sini
+    "no_filter": None,  # Tidak ada topeng
+    "topeng_1": "godot_project_virtual-try-on/assets/filter_image/topeng_1.png",
+    "topeng_2": "godot_project_virtual-try-on/assets/filter_image/topeng_2.png",
+    "badut": "godot_project_virtual-try-on/assets/filter_image/badut.png",
+    "spiderman": "godot_project_virtual-try-on/assets/filter_image/spiderman.png",
+    "ultraman": "godot_project_virtual-try-on/assets/filter_image/ultraman.png",
 }
 
 # Camera capture
@@ -192,7 +196,7 @@ def generate_frames():
         frame = cv2.flip(frame, 1)
 
         # Load mask
-        if os.path.exists(current_mask_path):
+        if current_mask_path and os.path.exists(current_mask_path):
             mask_img = cv2.imread(current_mask_path, cv2.IMREAD_UNCHANGED)
         else:
             mask_img = None
@@ -276,7 +280,7 @@ def get_frame():
         return Response(status_code=503, content="Camera not available")
 
     # Load mask
-    if os.path.exists(current_mask_path):
+    if current_mask_path and os.path.exists(current_mask_path):
         mask_img = cv2.imread(current_mask_path, cv2.IMREAD_UNCHANGED)
     else:
         mask_img = None

@@ -97,14 +97,15 @@ Backend akan berjalan di `http://localhost:8000`.
 1. Buka Godot Engine.
 2. Import proyek dari folder `godot_project_virtual-try-on`.
 3. Jalankan scene `try_on.tscn`.
-4. Pilih topeng dari dropdown dan nikmati virtual try-on!
+4. Pilih filter dari dropdown: **No Filter**, **Topeng 1**, **Topeng 2**, **Badut**, **Spiderman**, **Ultraman**, **Kamen Rider**.
+5. Nikmati virtual try-on!
 
 ## Endpoint API
 
 - `GET /video_feed`: Stream MJPEG untuk video dengan overlay topeng.
 - `GET /get_frame`: Mendapatkan frame tunggal sebagai JPEG.
-- `GET /available_masks`: List topeng yang tersedia.
-- `POST /select_mask`: Pilih topeng untuk overlay.
+- `GET /available_masks`: List filter yang tersedia (termasuk "no_filter" untuk tanpa topeng).
+- `POST /select_mask`: Pilih filter untuk overlay (gunakan "no_filter" untuk menghilangkan topeng).
 
 ## Training Model
 

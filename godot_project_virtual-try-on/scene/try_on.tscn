@@ -1,27 +1,14 @@
-[gd_scene load_steps=11 format=3 uid="uid://d2do3tgikmfjb"]
+[gd_scene load_steps=8 format=3 uid="uid://d2do3tgikmfjb"]
 
 [ext_resource type="Script" path="res://scripts/TryOn.cs" id="1_wl7qy"]
-[ext_resource type="FontFile" uid="uid://dxdxp3hoyktg" path="res://assets/font/LEMONMILK-Bold.otf" id="2_cjvfv"]
-[ext_resource type="Texture2D" uid="uid://bs0rufeevsg6v" path="res://assets/buttons/1. Free Hologram Interface Wenrexa/Button 1/Button Active.png" id="3_1hoqb"]
-[ext_resource type="Texture2D" uid="uid://vy2361whs5hj" path="res://assets/buttons/1. Free Hologram Interface Wenrexa/Button 1/Button Normal.png" id="4_gfudd"]
-[ext_resource type="Texture2D" uid="uid://cvgjx65fw6s20" path="res://assets/buttons/1. Free Hologram Interface Wenrexa/Button 1/Button Hover.png" id="5_l4afm"]
+[ext_resource type="FontFile" uid="uid://cjk05fqqedwdi" path="res://assets/font/LEMONMILK-Medium.otf" id="6_pu8ry"]
 [ext_resource type="Texture2D" uid="uid://cmbwk6yeook4y" path="res://assets/images/colorkit.png" id="6_xpf0s"]
+[ext_resource type="FontFile" uid="uid://b48ije8suuke3" path="res://assets/font/LEMONMILK-Light.otf" id="6_yae8g"]
 [ext_resource type="Texture2D" uid="uid://ck0pfl2b7l5xu" path="res://assets/images/l-tpeng-malangan20230509213026.png" id="7_75ap5"]
+[ext_resource type="Texture2D" uid="uid://kfud04sorxta" path="res://assets/images/Square-Polaroid-Frame.png" id="8_jobnx"]
 
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_d7rhx"]
-texture = ExtResource("5_l4afm")
-expand_margin_left = 10.0
-expand_margin_right = 10.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_5151l"]
-texture = ExtResource("4_gfudd")
-expand_margin_left = 10.0
-expand_margin_right = 10.0
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_6aoja"]
-texture = ExtResource("3_1hoqb")
-expand_margin_left = 10.0
-expand_margin_right = 10.0
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bwokw"]
+bg_color = Color(0.142, 0.3976, 0.71, 0.92549)
 
 [node name="Control" type="Control"]
 layout_mode = 3
@@ -65,46 +52,56 @@ stretch_mode = 4
 flip_h = true
 
 [node name="VideoFeed" type="TextureRect" parent="."]
+clip_contents = true
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -240.0
-offset_right = 320.0
-offset_bottom = 240.0
+offset_left = -275.0
+offset_top = -245.0
+offset_right = 277.0
+offset_bottom = 157.0
 grow_horizontal = 2
 grow_vertical = 2
+expand_mode = 1
 
-[node name="BtnBack" type="Button" parent="."]
+[node name="Background2" type="TextureRect" parent="."]
+modulate = Color(0.855749, 0.900133, 0.869603, 1)
+offset_left = 179.0
+offset_top = -6.0
+offset_right = 975.0
+offset_bottom = 614.0
+texture = ExtResource("8_jobnx")
+expand_mode = 1
+metadata/_edit_lock_ = true
+
+[node name="Label3" type="Label" parent="Background2"]
+custom_minimum_size = Vector2(300, 50)
+layout_direction = 1
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -545.0
-offset_top = 264.0
-offset_right = -429.0
-offset_bottom = 305.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-theme_override_colors/font_hover_pressed_color = Color(0.262745, 0.678431, 0.509804, 1)
-theme_override_colors/font_hover_color = Color(0.208262, 0.560284, 0.419026, 1)
-theme_override_colors/font_pressed_color = Color(0.100731, 0.306788, 0.222535, 1)
-theme_override_colors/font_focus_color = Color(0.262745, 0.678431, 0.509804, 1)
-theme_override_colors/font_color = Color(0.334006, 0.815893, 0.618541, 1)
-theme_override_constants/outline_size = 10
-theme_override_fonts/font = ExtResource("2_cjvfv")
-theme_override_font_sizes/font_size = 25
-theme_override_styles/hover = SubResource("StyleBoxTexture_d7rhx")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_5151l")
-theme_override_styles/normal = SubResource("StyleBoxTexture_6aoja")
-text = "Back
+offset_left = 129.0
+offset_top = 504.0
+offset_right = 429.0
+offset_bottom = 554.0
+size_flags_vertical = 1
+size_flags_stretch_ratio = 14.77
+tooltip_text = "
 "
+mouse_filter = 1
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 0
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/shadow_outline_size = 0
+theme_override_fonts/font = ExtResource("6_pu8ry")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_bwokw")
+text = "TRY-ON"
+horizontal_alignment = 1
+vertical_alignment = 1
+justification_flags = 160
 
 [node name="MaskDropdown" type="OptionButton" parent="."]
 layout_mode = 1
@@ -113,76 +110,38 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -100.0
-offset_top = 260.0
-offset_right = 100.0
-offset_bottom = 300.0
+offset_left = 74.0
+offset_top = 174.0
+offset_right = 274.0
+offset_bottom = 214.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_hover_pressed_color = Color(0.262745, 0.678431, 0.509804, 1)
-theme_override_colors/font_hover_color = Color(0.208262, 0.560284, 0.419026, 1)
-theme_override_colors/font_pressed_color = Color(0.100731, 0.306788, 0.222535, 1)
-theme_override_colors/font_focus_color = Color(0.262745, 0.678431, 0.509804, 1)
-theme_override_colors/font_color = Color(0.334006, 0.815893, 0.618541, 1)
-theme_override_fonts/font = ExtResource("2_cjvfv")
+theme_override_colors/font_hover_pressed_color = Color(0.320439, 0.581993, 0.921124, 0.92549)
+theme_override_colors/font_hover_color = Color(0.744233, 0.847159, 1, 0.988235)
+theme_override_colors/font_pressed_color = Color(0.618118, 0.771266, 0.99846, 0.988235)
+theme_override_colors/font_focus_color = Color(0.745098, 0.847059, 1, 0.988235)
+theme_override_colors/font_color = Color(0.321569, 0.580392, 0.921569, 0.92549)
+theme_override_fonts/font = ExtResource("6_yae8g")
 theme_override_font_sizes/font_size = 20
 
-[node name="BtnTipe1" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 226.0
-offset_top = 263.0
-offset_right = 342.0
-offset_bottom = 304.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="BtnBack2" type="Button" parent="."]
+custom_minimum_size = Vector2(110, 35)
+offset_left = 25.0
+offset_top = 565.0
+offset_right = 135.0
+offset_bottom = 614.0
 size_flags_horizontal = 4
-theme_override_colors/font_hover_pressed_color = Color(0.262745, 0.678431, 0.509804, 1)
-theme_override_colors/font_hover_color = Color(0.208262, 0.560284, 0.419026, 1)
-theme_override_colors/font_pressed_color = Color(0.100731, 0.306788, 0.222535, 1)
-theme_override_colors/font_focus_color = Color(0.262745, 0.678431, 0.509804, 1)
-theme_override_colors/font_color = Color(0.334006, 0.815893, 0.618541, 1)
-theme_override_constants/outline_size = 10
-theme_override_fonts/font = ExtResource("2_cjvfv")
-theme_override_font_sizes/font_size = 25
-theme_override_styles/hover = SubResource("StyleBoxTexture_d7rhx")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_5151l")
-theme_override_styles/normal = SubResource("StyleBoxTexture_6aoja")
-text = "Filter 1"
-
-[node name="BtnTipe2" type="Button" parent="."]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 416.0
-offset_top = 263.0
-offset_right = 532.0
-offset_bottom = 304.0
-grow_horizontal = 2
-grow_vertical = 2
-size_flags_horizontal = 4
-theme_override_colors/font_hover_pressed_color = Color(0.262745, 0.678431, 0.509804, 1)
-theme_override_colors/font_hover_color = Color(0.208262, 0.560284, 0.419026, 1)
-theme_override_colors/font_pressed_color = Color(0.100731, 0.306788, 0.222535, 1)
-theme_override_colors/font_focus_color = Color(0.262745, 0.678431, 0.509804, 1)
-theme_override_colors/font_color = Color(0.334006, 0.815893, 0.618541, 1)
-theme_override_constants/outline_size = 10
-theme_override_fonts/font = ExtResource("2_cjvfv")
-theme_override_font_sizes/font_size = 25
-theme_override_styles/hover = SubResource("StyleBoxTexture_d7rhx")
-theme_override_styles/pressed = SubResource("StyleBoxTexture_5151l")
-theme_override_styles/normal = SubResource("StyleBoxTexture_6aoja")
-text = "Filter 2
+size_flags_vertical = 4
+tooltip_text = "
 "
+theme_override_colors/font_color = Color(0.521569, 0.745098, 1, 1)
+theme_override_colors/icon_normal_color = Color(1, 1, 1, 1)
+theme_override_colors/icon_focus_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("6_pu8ry")
+theme_override_font_sizes/font_size = 30
+text = " Back
+"
+alignment = 0
 
-[connection signal="pressed" from="BtnBack" to="." method="OnStopPressed"]
 [connection signal="item_selected" from="MaskDropdown" to="." method="OnMaskSelected"]
-[connection signal="pressed" from="BtnTipe1" to="." method="_on_BtnTipe1_pressed"]
-[connection signal="pressed" from="BtnTipe2" to="." method="_on_BtnTipe2_pressed"]
+[connection signal="pressed" from="BtnBack2" to="." method="OnStopPressed"]
