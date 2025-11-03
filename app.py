@@ -41,6 +41,79 @@ available_masks = {
 cap = None
 
 
+def detect_faces_multi_angle(gray_frame, face_cascade):
+    """
+    Deteksi wajah dengan rotasi multi-angle (0-360 derajat).
+    Mengembalikan (faces, rotation_angle) dimana rotation_angle adalah sudut rotasi frame.
+    """
+    angles_to_try = [0, 90, 180, 270]  # Coba 4 orientasi utama
+    
+    for angle in angles_to_try:
+        if angle == 0:
+            rotated = gray_frame
+        else:
+            # Rotate frame
+            (h, w) = gray_frame.shape[:2]
+            center = (w // 2, h // 2)
+            M = cv2.getRotationMatrix2D(center, angle, 1.0)
+            rotated = cv2.warpAffine(gray_frame, M, (w, h))
+        
+        # Deteksi wajah pada frame yang dirotasi
+        faces = face_cascade.detectMultiScale(rotated, 1.2, 5, minSize=(100, 100))
+        
+        if len(faces) > 0:
+            # Wajah ditemukan pada sudut ini
+            return faces, angle
+    
+    # Jika tidak ditemukan di orientasi utama, coba sudut intermediat
+    intermediate_angles = [45, 135, 225, 315]
+    for angle in intermediate_angles:
+        (h, w) = gray_frame.shape[:2]
+        center = (w // 2, h // 2)
+        M = cv2.getRotationMatrix2D(center, angle, 1.0)
+        rotated = cv2.warpAffine(gray_frame, M, (w, h))
+        
+        faces = face_cascade.detectMultiScale(rotated, 1.2, 5, minSize=(80, 80))
+        
+        if len(faces) > 0:
+            return faces, angle
+    
+    # Tidak ada wajah terdeteksi
+    return [], 0
+
+
+def transform_bbox_back(bbox, angle, frame_shape):
+    """
+    Transform bounding box kembali ke koordinat frame asli setelah rotasi.
+    """
+    x, y, w, h = bbox
+    h_frame, w_frame = frame_shape[:2]
+    
+    if angle == 0:
+        return bbox
+    
+    # Titik tengah bounding box pada frame yang dirotasi
+    center_x = x + w // 2
+    center_y = y + h // 2
+    
+    # Transform kembali ke koordinat asli
+    center_frame = (w_frame // 2, h_frame // 2)
+    M = cv2.getRotationMatrix2D(center_frame, -angle, 1.0)
+    
+    # Transform center point
+    point = np.array([center_x, center_y, 1])
+    transformed = M.dot(point)
+    
+    new_center_x = int(transformed[0])
+    new_center_y = int(transformed[1])
+    
+    # Bounding box baru dengan center yang sudah ditransform
+    new_x = new_center_x - w // 2
+    new_y = new_center_y - h // 2
+    
+    return (new_x, new_y, w, h)
+
+
 class MaskRequest(BaseModel):
     mask_name: str
 
@@ -61,7 +134,7 @@ def get_available_masks():
     return {"masks": list(available_masks.keys())}
 
 
-def apply_mask_to_face(frame, mask_img, bbox, roll, scale):
+def apply_mask_to_face(frame, mask_img, bbox, roll, scale, frame_rotation=0):
     """Aplikasikan mask ke wajah dengan pose yang sesuai"""
     x, y, w, h = bbox
 
@@ -81,7 +154,8 @@ def apply_mask_to_face(frame, mask_img, bbox, roll, scale):
 
     # PENTING: Inverse roll karena kamera adalah mirror image
     # Ketika kepala miring ke kanan, nilai roll positif, mask harus miring ke kiri
-    adjusted_roll = -roll  # Inverse untuk mirror effect
+    # Frame sudah dikembalikan ke orientasi normal, jadi hanya perlu inverse roll
+    total_rotation = -roll
 
     # Rotate mask sesuai roll dengan padding yang cukup
     # Hitung ukuran canvas yang cukup untuk rotasi
@@ -101,7 +175,7 @@ def apply_mask_to_face(frame, mask_img, bbox, roll, scale):
 
     # Rotate dengan center di tengah canvas
     center = (padded_size // 2, padded_size // 2)
-    M = cv2.getRotationMatrix2D(center, adjusted_roll, 1.0)
+    M = cv2.getRotationMatrix2D(center, total_rotation, 1.0)
 
     if canvas.shape[2] == 4:
         mask_rotated = cv2.warpAffine(canvas, M, (padded_size, padded_size),
@@ -201,13 +275,21 @@ def generate_frames():
         else:
             mask_img = None
 
-        # Detect face
+        # Detect face dengan multi-angle detection
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = face_cascade.detectMultiScale(gray, 1.2, 5, minSize=(100, 100))
+        faces, frame_rotation = detect_faces_multi_angle(gray, face_cascade)
 
         if len(faces) > 0 and mask_img is not None:
             x, y, w, h = faces[0]
-            roi = gray[y:y+h, x:x+w]
+            
+            # Transform bbox kembali ke koordinat frame asli
+            if frame_rotation != 0:
+                x, y, w, h = transform_bbox_back((x, y, w, h), frame_rotation, gray.shape)
+            
+            roi = gray[y:y+h, x:x+w] if (y >= 0 and x >= 0 and y+h <= gray.shape[0] and x+w <= gray.shape[1]) else gray[max(0,y):min(gray.shape[0],y+h), max(0,x):min(gray.shape[1],x+w)]
+            
+            if roi.shape[0] == 0 or roi.shape[1] == 0:
+                roi = gray  # Fallback to full frame
 
             # Predict pose
             try:
@@ -225,9 +307,9 @@ def generate_frames():
                 prev_roll = roll
                 prev_scale = scale
 
-                # Apply mask
+                # Apply mask dengan frame rotation
                 frame = apply_mask_to_face(
-                    frame, mask_img, (x, y, w, h), roll, scale)
+                    frame, mask_img, (x, y, w, h), roll, scale, frame_rotation)
 
                 # Debug info (optional - uncomment untuk debugging)
                 # cv2.rectangle(frame, (x, y), (x+w, y+h), (0, 255, 0), 2)
@@ -285,13 +367,21 @@ def get_frame():
     else:
         mask_img = None
 
-    # Detect face
+    # Detect face dengan multi-angle detection
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    faces = face_cascade.detectMultiScale(gray, 1.2, 5)
+    faces, frame_rotation = detect_faces_multi_angle(gray, face_cascade)
 
     if len(faces) > 0 and mask_img is not None:
         x, y, w, h = faces[0]
-        roi = gray[y:y+h, x:x+w]
+        
+        # Transform bbox kembali ke koordinat frame asli
+        if frame_rotation != 0:
+            x, y, w, h = transform_bbox_back((x, y, w, h), frame_rotation, gray.shape)
+        
+        roi = gray[y:y+h, x:x+w] if (y >= 0 and x >= 0 and y+h <= gray.shape[0] and x+w <= gray.shape[1]) else gray[max(0,y):min(gray.shape[0],y+h), max(0,x):min(gray.shape[1],x+w)]
+        
+        if roi.shape[0] == 0 or roi.shape[1] == 0:
+            roi = gray  # Fallback to full frame
 
         # Predict pose
         try:
@@ -301,9 +391,9 @@ def get_frame():
             roll = model["roll"].predict(feat)[0]
             scale = model["scale"].predict(feat)[0]
 
-            # Apply mask
+            # Apply mask dengan frame rotation
             frame = apply_mask_to_face(
-                frame, mask_img, (x, y, w, h), roll, scale)
+                frame, mask_img, (x, y, w, h), roll, scale, frame_rotation)
         except Exception as e:
             print(f"Error applying mask: {e}")
 

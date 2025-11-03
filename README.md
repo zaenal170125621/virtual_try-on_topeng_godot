@@ -5,6 +5,7 @@ Proyek ini adalah aplikasi virtual try-on topeng yang menggunakan Godot Engine s
 ## Fitur Utama
 
 - **Deteksi Wajah Real-Time**: Menggunakan Haar Cascade untuk mendeteksi wajah dari webcam.
+- **Rotasi 360 Derajat**: Mask mengikuti wajah bahkan ketika kepala terbalik atau miring.
 - **Overlay Topeng Dinamis**: Topeng menyesuaikan rotasi dan skala berdasarkan pose wajah.
 - **Multi-Mask Support**: Mendukung berbagai topeng dengan dropdown untuk pemilihan.
 - **Model Machine Learning**: Random Forest untuk regresi pose wajah (roll dan scale).
@@ -161,6 +162,14 @@ Lihat panduan di [`CARA_TAMBAH_TOPENG.md`](CARA_TAMBAH_TOPENG.md) untuk instruks
 - **Error JPEG parsing di Godot**: Pastikan backend menggunakan endpoint `/get_frame` untuk polling frame tunggal.
 - **Topeng tidak berputar**: Periksa model pose estimation dan logika rotasi di `app.py`.
 - **Webcam tidak terdeteksi**: Pastikan webcam terhubung dan tidak digunakan aplikasi lain.
+
+## Dokumentasi Tambahan
+
+- **[CARA_TAMBAH_TOPENG.md](CARA_TAMBAH_TOPENG.md)**: Panduan lengkap untuk menambahkan topeng baru.
+- **[360_ROTATION_GUIDE.md](360_ROTATION_GUIDE.md)**: Panduan fitur rotasi 360 derajat untuk deteksi wajah dalam berbagai orientasi.
+- **[ROTATED_FACE_DETECTION.md](ROTATED_FACE_DETECTION.md)**: Dokumentasi teknis multi-angle face detection.
+- **[3D_POSE_ESTIMATION.md](3D_POSE_ESTIMATION.md)**: Dokumentasi pose estimation 3D (opsional).
+- **[INTEGRATION_GUIDE.md](INTEGRATION_GUIDE.md)**: Panduan integrasi backend dengan Godot.
 
 ## Kontribusi
 
