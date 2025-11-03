@@ -1,0 +1,32 @@
+# Dataset folders
+dataset/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+praktikum_env/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Model files (optional - uncomment if models are too large)
+# models/
+# *.pth
+# *.pt
+# *.onnx
+
+# Debug images
+debug_frame_*.jpg
+debug_frame_*.jpg.import
