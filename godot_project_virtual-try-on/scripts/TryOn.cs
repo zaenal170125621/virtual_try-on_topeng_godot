@@ -120,7 +120,7 @@ public partial class TryOn : Control
 		{
 			GD.PrintErr($"Gagal load masks: {e.Message}");
 			// Fallback: tambah mask default
-			_maskDropdown.AddItem("pig_nose", 0);
+			_maskDropdown.AddItem("filter", 0);
 		}
 	}
 

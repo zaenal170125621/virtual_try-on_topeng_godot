@@ -69,6 +69,7 @@ expand_mode = 1
 
 [node name="Background2" type="TextureRect" parent="."]
 modulate = Color(0.855749, 0.900133, 0.869603, 1)
+layout_mode = 0
 offset_left = 179.0
 offset_top = -6.0
 offset_right = 975.0
@@ -126,6 +127,7 @@ theme_override_font_sizes/font_size = 20
 
 [node name="BtnBack2" type="Button" parent="."]
 custom_minimum_size = Vector2(110, 35)
+layout_mode = 0
 offset_left = 25.0
 offset_top = 565.0
 offset_right = 135.0

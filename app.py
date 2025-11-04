@@ -47,7 +47,7 @@ def detect_faces_multi_angle(gray_frame, face_cascade):
     Mengembalikan (faces, rotation_angle) dimana rotation_angle adalah sudut rotasi frame.
     """
     angles_to_try = [0, 90, 180, 270]  # Coba 4 orientasi utama
-    
+
     for angle in angles_to_try:
         if angle == 0:
             rotated = gray_frame
@@ -57,14 +57,15 @@ def detect_faces_multi_angle(gray_frame, face_cascade):
             center = (w // 2, h // 2)
             M = cv2.getRotationMatrix2D(center, angle, 1.0)
             rotated = cv2.warpAffine(gray_frame, M, (w, h))
-        
+
         # Deteksi wajah pada frame yang dirotasi
-        faces = face_cascade.detectMultiScale(rotated, 1.2, 5, minSize=(100, 100))
-        
+        faces = face_cascade.detectMultiScale(
+            rotated, 1.2, 5, minSize=(100, 100))
+
         if len(faces) > 0:
             # Wajah ditemukan pada sudut ini
             return faces, angle
-    
+
     # Jika tidak ditemukan di orientasi utama, coba sudut intermediat
     intermediate_angles = [45, 135, 225, 315]
     for angle in intermediate_angles:
@@ -72,12 +73,13 @@ def detect_faces_multi_angle(gray_frame, face_cascade):
         center = (w // 2, h // 2)
         M = cv2.getRotationMatrix2D(center, angle, 1.0)
         rotated = cv2.warpAffine(gray_frame, M, (w, h))
-        
-        faces = face_cascade.detectMultiScale(rotated, 1.2, 5, minSize=(80, 80))
-        
+
+        faces = face_cascade.detectMultiScale(
+            rotated, 1.2, 5, minSize=(80, 80))
+
         if len(faces) > 0:
             return faces, angle
-    
+
     # Tidak ada wajah terdeteksi
     return [], 0
 
@@ -88,29 +90,29 @@ def transform_bbox_back(bbox, angle, frame_shape):
     """
     x, y, w, h = bbox
     h_frame, w_frame = frame_shape[:2]
-    
+
     if angle == 0:
         return bbox
-    
+
     # Titik tengah bounding box pada frame yang dirotasi
     center_x = x + w // 2
     center_y = y + h // 2
-    
+
     # Transform kembali ke koordinat asli
     center_frame = (w_frame // 2, h_frame // 2)
     M = cv2.getRotationMatrix2D(center_frame, -angle, 1.0)
-    
+
     # Transform center point
     point = np.array([center_x, center_y, 1])
     transformed = M.dot(point)
-    
+
     new_center_x = int(transformed[0])
     new_center_y = int(transformed[1])
-    
+
     # Bounding box baru dengan center yang sudah ditransform
     new_x = new_center_x - w // 2
     new_y = new_center_y - h // 2
-    
+
     return (new_x, new_y, w, h)
 
 
@@ -281,13 +283,15 @@ def generate_frames():
 
         if len(faces) > 0 and mask_img is not None:
             x, y, w, h = faces[0]
-            
+
             # Transform bbox kembali ke koordinat frame asli
             if frame_rotation != 0:
-                x, y, w, h = transform_bbox_back((x, y, w, h), frame_rotation, gray.shape)
-            
-            roi = gray[y:y+h, x:x+w] if (y >= 0 and x >= 0 and y+h <= gray.shape[0] and x+w <= gray.shape[1]) else gray[max(0,y):min(gray.shape[0],y+h), max(0,x):min(gray.shape[1],x+w)]
-            
+                x, y, w, h = transform_bbox_back(
+                    (x, y, w, h), frame_rotation, gray.shape)
+
+            roi = gray[y:y+h, x:x+w] if (y >= 0 and x >= 0 and y+h <= gray.shape[0] and x+w <= gray.shape[1]
+                                         ) else gray[max(0, y):min(gray.shape[0], y+h), max(0, x):min(gray.shape[1], x+w)]
+
             if roi.shape[0] == 0 or roi.shape[1] == 0:
                 roi = gray  # Fallback to full frame
 
@@ -373,13 +377,15 @@ def get_frame():
 
     if len(faces) > 0 and mask_img is not None:
         x, y, w, h = faces[0]
-        
+
         # Transform bbox kembali ke koordinat frame asli
         if frame_rotation != 0:
-            x, y, w, h = transform_bbox_back((x, y, w, h), frame_rotation, gray.shape)
-        
-        roi = gray[y:y+h, x:x+w] if (y >= 0 and x >= 0 and y+h <= gray.shape[0] and x+w <= gray.shape[1]) else gray[max(0,y):min(gray.shape[0],y+h), max(0,x):min(gray.shape[1],x+w)]
-        
+            x, y, w, h = transform_bbox_back(
+                (x, y, w, h), frame_rotation, gray.shape)
+
+        roi = gray[y:y+h, x:x+w] if (y >= 0 and x >= 0 and y+h <= gray.shape[0] and x+w <= gray.shape[1]
+                                     ) else gray[max(0, y):min(gray.shape[0], y+h), max(0, x):min(gray.shape[1], x+w)]
+
         if roi.shape[0] == 0 or roi.shape[1] == 0:
             roi = gray  # Fallback to full frame
 

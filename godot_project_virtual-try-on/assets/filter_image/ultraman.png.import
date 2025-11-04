@@ -3,11 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://f7o33tswjejr"
-valid=false
+path="res://.godot/imported/ultraman.png-f47b3669eff8f207520830329529c2e6.ctex"
+metadata={
+"vram_texture": false
+}
 
 [deps]
 
 source_file="res://assets/filter_image/ultraman.png"
+dest_files=["res://.godot/imported/ultraman.png-f47b3669eff8f207520830329529c2e6.ctex"]
 
 [params]
 
